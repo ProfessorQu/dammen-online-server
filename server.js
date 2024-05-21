@@ -1,6 +1,6 @@
 const io = require('socket.io')(9999, {
     cors: {
-        origin: ["http://127.0.0.1:5500", "http://localhost:5500"]
+        origin: "*"
     }
 });
 
@@ -27,14 +27,15 @@ io.on('connection', socket => {
     socket.on('send-move', move => {
         const game = getGameByPlayer(socket.id);
         
-        if (game === undefined)
+        if (game === undefined) {
             return;
-        else if (game.gameOver)
+        } else if (game.gameOver) {
             return;
-        else if (game.white === socket.id && game.board.turn !== dammen.Player.White)
+        } else if (game.white === socket.id && game.board.turn !== dammen.Player.White) {
             return;
-        else if (game.black === socket.id && game.board.turn !== dammen.Player.Black)
+        } else if (game.black === socket.id && game.board.turn !== dammen.Player.Black) {
             return;
+        }
     
         game.board.move(move);
         io.to(game.roomId).emit('receive-move', game.board.boardArray, game.board.turn, game.board.takeIndex);
@@ -53,7 +54,6 @@ io.on('connection', socket => {
         if (game === undefined) {
             let board = new dammen.Dammen();
             if (Math.random() < 0.5) {
-                console.log("Created as white");
                 games.push({
                     roomId: roomId,
                     white: socket.id,
@@ -64,7 +64,6 @@ io.on('connection', socket => {
                 });
                 io.to(socket.id).emit('join-success', dammen.Player.White);
             } else {
-                console.log("Created as black");
                 games.push({
                     roomId: roomId,
                     black: socket.id,
@@ -77,11 +76,9 @@ io.on('connection', socket => {
             }
         } else if (game.black !== socket.id && game.white !== socket.id) {
             if (game.white === undefined) {
-                console.log("Joined as white");
                 game.white = socket.id;
                 io.to(socket.id).emit('join-success', dammen.Player.White);
             } else if (game.black === undefined) {
-                console.log("Joined as black");
                 game.black = socket.id;
                 io.to(socket.id).emit('join-success', dammen.Player.Black);
             }
@@ -92,8 +89,9 @@ io.on('connection', socket => {
 
     socket.on('disconnect', () => {
         const game = getGameByPlayer(socket.id);
-        if (game === undefined)
+        if (game === undefined) {
             return;
+        }
 
         socket.to(game.roomId).emit('opponent-disconnect');
         let index = games.indexOf(game);
@@ -103,8 +101,9 @@ io.on('connection', socket => {
 
     socket.on('resign', () => {
         const game = getGameByPlayer(socket.id);
-        if (game === undefined || game.gameOver)
+        if (game === undefined || game.gameOver) {
             return;
+        }
 
         if (game.black === socket.id) {
             io.to(game.roomId).emit('game-over', "Red won");
@@ -121,8 +120,9 @@ io.on('connection', socket => {
 
     socket.on('draw', () => {
         const game = getGameByPlayer(socket.id);
-        if (game === undefined || game.gameOver)
+        if (game === undefined || game.gameOver) {
             return;
+        }
 
         if (game.black === socket.id) {
             game.blackDraw = true;
