@@ -38,7 +38,7 @@ io.on('connection', socket => {
         }
     
         game.board.move(move);
-        io.to(game.roomId).emit('receive-move', game.board.boardArray, game.board.turn, game.board.takeIndex);
+        io.to(game.roomId).emit('receive-move', game.board.boardArray, game.board.turn, game.board.takeIndex, move.from, move.to);
         if (game.board.gameOver()) {
             let winner = game.board.turn === dammen.Player.Black ? "Red" : "Black";
             io.to(game.roomId).emit('game-over', winner + " won");
